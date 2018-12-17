@@ -1,22 +1,29 @@
 
 INCLUDE Irvine32.inc
-
 .DATA
 
 maxSize equ 400 ;won't be changed
 actualSize BYTE ? ;actual number of bytes/coordinates (X's + Y's), will be determined during run-time (the converting PROC)
-inputLines BYTE maxSize DUP(?)
+inputLines BYTE maxSize DUP(?)	; input buffer containing the characters in the file
 fileName BYTE "lines.txt", 0 ;doesn't have to be a path if it's in the project's folder
+	
+pointsList BYTE maxSize DUP(?)	; contains the converted integers
 
-pointsList BYTE maxSize DUP(?)
-xList BYTE maxSize DUP(?) ;XStartLine1, XEndLine1, XStartLine2, XEndLine2...
-yList BYTE maxSize DUP(?) ;YStartLine1, YEndLine1, YStartLine2, YEndLine2...
+xList BYTE 400 DUP(?)	; x coordinates {startL1, endL1, startL2, endL2, startL3, ...}
+xNumberElement BYTE ?	; number of x-coordinates x2 (start + end)
+yList BYTE 400 DUP(?)	; y coordinates {startL1, endL1, startL2, endL2, startL3, ...}
+yNumberElement BYTE ?	; number of y-coordinates x2 (start + end)
 
-
-.CODE
-
+.code
 main PROC
 	CALL ReadLines
+
+	mov ESI, OFFSET inputLines	; list of characters
+	mov EDI, OFFSET pointsList	; list to be filled with numbers
+	CALL convertCharsToNumbers
+	;call writeDec
+	mov actualSize, AL ; EAX has the number of converted integers
+
 exit
 main ENDP
 
@@ -53,5 +60,51 @@ INVOKE CreateFile,
 	edx, GENERIC_READ, DO_NOT_SHARE, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0
 ret
 OpenFile ENDP
+
+convertCharsToNumbers PROC USES EBX ECX EDX ESI EDI
+;
+; Converts a list of characters representing integer into their integer values.
+; Receives: ESI points to the array of characters, EDI points to
+; the array of numbers to fill.
+; Returns: EAX containing the total number of the converted numbers.
+; Requirements: All the lists must be lists of BYTES.
+;------------------------------------------------------
+	mov ECX, 0	; temporary counter of the integer elements
+	mov BL, 0	; temporary value to update with the integer number
+	mov EDX, 0	; counter spaces
+	while_convertingChars:
+		mov AL, [ESI]
+		cmp AL, '*'
+		je endwhile_convertingChars	; EOF character
+		call IsDigit
+		jz if_updateESIvalue ; contains a valid number
+		cmp EDX, 0	; first space after a number
+		jne endif_updateESIvalue
+		
+		; AL has the first space or enter, then move the previous integer value in the list
+		mov [EDI], BL
+		mov BL, 0 ; reset the temporary value
+		inc ECX ; count an integer
+		inc EDI	; go to the next index
+		inc EDX ; count a space
+		jmp endif_updateESIvalue
+	
+		; BL = (BL * 10) + AL = (result * 10) + digit
+		if_updateESIvalue:
+			sub AL, '0' ; convert the ASCII character to its digit value
+			mov BH, AL	; save the  digit
+			mov AL, BL	; needed for MUL 
+			mov BL, 10	; needed for MUL
+			mul BL	; (BL * 10) = (result * 10)
+			add AL, BH ; (BL * 10) + BH --having value of AL--
+			mov BL, AL ; update the original container
+			mov EDX, 0 ; always update the spaces counter to zero
+		endif_updateESIvalue:
+		inc ESI ; go to the next character
+	jmp while_convertingChars
+	endwhile_convertingChars:
+	mov EAX, ECX
+ret
+convertCharsToNumbers ENDP
 
 END main
