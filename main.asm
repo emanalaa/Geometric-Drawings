@@ -24,6 +24,14 @@ main PROC
 	;call writeDec
 	mov actualSize, AL ; EAX has the number of converted integers
 
+	mov EDX, OFFSET pointsList
+	movsx ECX, actualSize
+	mov ESI, OFFSET xList
+	mov EDI, OFFSET yList
+	mov xNumberElement, 0
+	mov yNumberElement, 0
+	CALL divideIntoXY
+
 exit
 main ENDP
 
@@ -106,5 +114,43 @@ convertCharsToNumbers PROC USES EBX ECX EDX ESI EDI
 	mov EAX, ECX
 ret
 convertCharsToNumbers ENDP
+
+divideIntoXY PROC USES EAX EDX ECX ESI EDI
+;
+; Divides a list of ponits stored as {x, y,x , y, ...} into 2 lists
+; Receives: EDX points to array of points, ESI points to
+;	array of x-coordinates, ESI points to array of y-coordinates
+;	ECX containing number of elements in the array of points
+; Returns: EAX containing the total number of the converted numbers.
+; Requirements: All the lists must be lists of BYTES.
+;------------------------------------------------------
+	loop_xyDivision:
+		; Line_i Start_x
+		mov AL, [EDX]
+		mov [ESI], AL
+		inc ESI
+		inc EDX
+		; Line_i Start_y
+		mov AL, [EDX]
+		mov [EDI], AL
+		inc EDI
+		inc EDX
+		; Line_i End_x
+		mov AL, [EDX]
+		mov [ESI], AL
+		inc ESI
+		inc EDX
+		; Line_i End_y
+		mov AL, [EDX]
+		mov [EDI], AL
+		inc EDI
+		inc EDX
+
+		add xNumberElement, 2
+		add yNumberElement, 2
+		sub ECX, 3
+	LOOP loop_xyDivision
+ret
+divideIntoXY ENDP
 
 END main
