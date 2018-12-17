@@ -8,8 +8,8 @@ inputLines BYTE maxSize DUP(?)
 fileName BYTE "lines.txt", 0 ;doesn't have to be a path if it's in the project's folder
 
 pointsList BYTE maxSize DUP(?)
-XList BYTE maxSize DUP(?)
-YList BYTE maxSize DUP(?)
+XList BYTE maxSize DUP(?) ;XStartLine1, XEndLine1, XStartLine2, XEndLine2...
+YList BYTE maxSize DUP(?) ;YStartLine1, YEndLine1, YStartLine2, YEndLine2...
 
 
 .CODE
