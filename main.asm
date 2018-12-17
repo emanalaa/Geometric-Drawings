@@ -4,6 +4,7 @@ INCLUDE Irvine32.inc
 .DATA
 
 maxSize equ 400 ;won't be changed
+actualSize BYTE ? ;actual number of bytes/points, will be determined during run-time (the converting PROC)
 inputLines BYTE maxSize DUP(?)
 fileName BYTE "lines.txt", 0 ;doesn't have to be a path if it's in the project's folder
 
