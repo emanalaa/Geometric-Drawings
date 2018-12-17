@@ -1,35 +1,44 @@
 
 INCLUDE Irvine32.inc
+
 .DATA
-	inputLines BYTE 400 DUP(?)
-	fileName BYTE "C:\Users\Mirna\Desktop\Assembly\Project\Sample Case\lines.txt", 0 ; based on the place pof the file on your pc. Should be changed later.
-.code
+
+maxSize equ 400 ;won't be changed
+inputLines BYTE maxSize DUP(?)
+fileName BYTE "lines.txt", 0 ;doesn't have to be a path if it's in the project's folder
+
+pointsList BYTE maxSize DUP(?)
+XList BYTE maxSize DUP(?)
+YList BYTE maxSize DUP(?)
+
+
+.CODE
+
 main PROC
-	CALL readFileWtv
+	CALL readLines
 	exit
 main ENDP
 
-readFileWtv PROC
-	mov EDX, offset fileName ; file path
-	CALL OpenFile ; returns filehandle in eax
+readLines PROC
+	mov EDX, offset fileName 
+	CALL OpenFile ;returns fileHandle in EAX
 	
-	mov ECX, 400 ; maxmium number of bytes
-	mov EDX, offset inputLines ; the buffer
+	mov ECX, maxSize
+	mov EDX, offset inputLines ;the buffer
 	CALL ReadFromFile
-	CALL WriteInt ; view number of bytes read (EAX)
-	CALL CRLF
+	;CALL WriteInt ;view number of bytes read (EAX)
+	;CALL CRLF
 
-	mov EDX, offset inputLines
-	mov ECX, EAX ; EAX = number of bytes read
-	LoopWriteLines:
-		mov AL, [EDX]
-		CALL WriteChar
-		; CALL CRLF
-		add EDX, type inputLines
-		loop LoopWriteLines
-
+	;mov EDX, offset inputLines
+	;mov ECX, EAX ;EAX = number of bytes read
+	;LoopWriteLines:
+		;mov AL, [EDX]
+		;CALL WriteChar
+		;;CALL CRLF
+		;add EDX, type inputLines
+	;loop LoopWriteLines
 	ret
-readFileWtv ENDP
+readLines ENDP
 
 OpenFile PROC
 ;
