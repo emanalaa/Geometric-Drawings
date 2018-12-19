@@ -18,7 +18,7 @@ numOfBytesTriangles DWORD ?  ;used as an index with the offset of pointsTriangle
 							 ;to know where to insert the next element
 numOfPointsTriangles DWORD ? ;actual number of points
 numOfTriangles DWORD ?
-pointsTrianglesList DWORD maxSize DUP(?) ;indices of the points of the detected triangles in XList
+pointsTrianglesList DWORD maxSize DUP(?) ;indices of the points of the detected triangles in xList/yList
 
 
 .CODE
