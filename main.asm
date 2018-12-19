@@ -73,8 +73,8 @@ main PROC
 		mov EDI, offset xList
 		add EDI, EBX
 		movzx EAX, BYTE ptr [EDI]
-
 		CALL WriteInt  ;x coordinate of the point
+		
 		mov AL, ','
 		CALL WriteChar
 		mov AL, ' '
