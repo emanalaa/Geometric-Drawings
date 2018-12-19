@@ -424,14 +424,15 @@ FindTriangles PROC
 			inc numOfTriangles
 
 			nextLine_FindTri:
-			;x coordinate of the start of the next line in 2nd loop
-			add EBX, 2
+			add EBX, 2 ;x coordinate of the start of the next line in 2nd loop
+
 		;LOOP loop_secondLineTri: JUMP TOO FAR, HAS TO BE WRITTEN EXPLICITLY
 		dec ECX
 		JNZ loop_secondLineTri
-		;next line in 1st loop
-		add EAX, 2
+
+		add EAX, 2 ;next line in 1st loop
 		pop ECX ;retrieve the original counter of 1st loop from stack
+
 	;LOOP loop_firstLineTri: JUMP TOO FAR, HAS TO BE WRITTEN EXPLICITLY
 	dec ECX
 	JNZ loop_firstLineTri
@@ -538,14 +539,10 @@ FindThirdLine_FindTri PROC USES ECX
 		dec ECX
 		JNZ loop_FindThirdLine
 
-		mov EDX, -1
-		JMP didntFindThirdLine_FindThirdLine
-
+		mov EDX, -1 ;third line not found
+		
 		foundThirdLine_FindThirdLine:
 		;return, EDX contains the index of the found third line (hopefully :'D)
-
-		didntFindThirdLine_FindThirdLine:
-		;return, EDX = -1
 ret
 FindThirdLine_FindTri ENDP
 
