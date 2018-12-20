@@ -5,7 +5,7 @@ INCLUDE Irvine32.inc
 fileName BYTE "lines.txt", 0 ;doesn't have to be a path if it's in the project's folder
 
 maxSize equ 400 ;won't be changed
-actualSize BYTE ? ;actual number of bytes/coordinates (X's + Y's), will be determined during run-time (the converting PROC)
+actualSize DWORD ? ;actual number of bytes/coordinates (X's + Y's), will be determined during run-time (the converting PROC)
 numOfPoints BYTE ? ;actualSize / 2
 numOfLines BYTE ? ;numOfPoints / 2
 
@@ -30,17 +30,17 @@ main PROC
 	mov EDI, OFFSET pointsList	; list to be filled with numbers
 	CALL ConvertCharsToNumbers
 	;call writeDec
-	mov actualSize, AL ; EAX has the number of converted integers
+	mov actualSize, EAX ; EAX has the number of converted integers
 
 	mov EDX, OFFSET pointsList
-	movsx ECX, actualSize
+	mov ECX, actualSize
 	mov ESI, OFFSET xList
 	mov EDI, OFFSET yList
 	;mov xNumberElement, 0
 	;mov yNumberElement, 0
 	CALL DivideIntoXY
 
-	movzx EAX, actualSize
+	mov EAX, actualSize
 	CALL DivideByTwo      ;getting # points = # of bytes (actualSize) / 2
 	mov numOfPoints, AL   ;EAX contains actualSize / 2
 	CALL DivideByTwo      ;getting # of lines = # of points (EAX) / 2
@@ -59,6 +59,7 @@ main PROC
 	CALL FindTriangles
 	mov EAX, numOfTriangles
 	CALL WriteDec ;number of triangles
+	CALL CRLF
 	CALL CRLF
 	cmp numOfTriangles, 0
 	JE noTrianglesFound
@@ -535,6 +536,7 @@ FindThirdLine_FindTri PROC USES ECX
 
 			nextLine_FindThirdLine:
 			add EDX, 2
+
 		;LOOP loop_FindThirdLine: JUMP TOO FAR, HAS TO BE WRITTEN EXPLICITLY
 		dec ECX
 		JNZ loop_FindThirdLine
