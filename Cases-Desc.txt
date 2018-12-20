@@ -1,0 +1,39 @@
+lines.txt
+1 rectangle
+1 triangle
+
+Lines2.txt
+1 tectangle
+2 triangles
+
+Lines3.txt
+2 rectangles
+2 triangles
+1 square
+
+Lines4.txt:
+6 triangles
+4 squares
+
+Lines5.txt
+2 rectangles
+2 triangles
+4 squares
+
+Lines6.txt
+10 triangles
+
+Lines7.txt
+10 squares
+
+Lines8.txt
+no shapes
+
+Lines9.txt
+3 squares
+7 triangles
+
+Lines10.txt
+2 rectangles
+2 triangles
+1 square
