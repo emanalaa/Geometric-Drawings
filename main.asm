@@ -377,7 +377,7 @@ FindTriangles PROC
 			add EDI, type pointsTrianglesList
 			mov [EDI], EBX ;start of line2 (3rd pt.)
 			add numOfBytesTriangles, type pointsTrianglesList * 3
-			add numOfPointsTriangles, 0
+			add numOfPointsTriangles, 3
 			inc numOfTriangles
 			JMP nextLine_FindTri
 
