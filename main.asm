@@ -691,7 +691,7 @@ findIntersections PROC
 	mov EBX, offset yList
 	mov EDI, offset xIntersections
 	mov ESI, offset yIntersections
-	movzx ECX, xNumberElement
+	movzx ECX, numOfPoints
 
 	loop_firstLine: ; selects a line an to find its intersections with the other lines
 
@@ -711,7 +711,6 @@ findIntersections PROC
 
 		add EDX, 2
 		add EBX, 2
-		dec ECX
 		dec ECX
 		cmp ECX, 0
 		je endloop_findIntersectionWCur
@@ -840,7 +839,7 @@ findIntersections PROC
 			continueSearching: ; dec EDX and EDI and ECX and continue searching for other intersections with the first line.
 			add EDX, 2
 			add EBX, 2
-			sub ECX, 2
+			dec ECX
 			cmp ECX, 0
 			je endloop_findIntersectionWCur
 		JMP loop_findIntersectionWCur
@@ -852,7 +851,7 @@ findIntersections PROC
 		add EDX, 2
 		add EBX, 2
 		mov ECX, tmp1stPointECX
-		sub ECX, 2
+		dec ECX
 		cmp ECX, 0
 		jbe endloop_firstLine
 	JMP loop_firstLine
@@ -1106,7 +1105,7 @@ findRectangles PROC
 											mov tmpValidateRecECX, ECX
 											mov EDI, offset xList
 											mov ESI, offset yList
-											movzx ECX, xNumberElement
+											movzx ECX, numOfPoints
 
 											loop_findLines: ; traverses the given lines through the xList and yList to find the required lines.
 
@@ -1276,7 +1275,7 @@ findRectangles PROC
 											continuechk:
 												add EDI, 2
 												add ESI, 2
-												sub ECX, 2
+												dec ECX
 												cmp ECX, 0
 												je endloop_findLines
 											jmp loop_findLines
