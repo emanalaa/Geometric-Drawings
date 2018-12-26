@@ -77,6 +77,10 @@ x4 BYTE ?							; Used as the x-coordinate of the found Fourth point in the vali
 y4 BYTE ?							; Used as the y-coordinate of the found Fourth point in the validation of the rectangle points
 line BYTE ?							; Used to indicate the line that we're check whether it exists in the input or not
 
+
+welcome BYTE "Hello welcome to our Geometric Drawings Project.",0
+chooseProgram BYTE "Enter 1 for Diaplaying number of shapes or 2 for Drawing them or 0 to exit",0
+error BYTE "Invalid choice, please enter you choice again!", 0
 ;================================================================================================================================================================================================================================================
 
 
@@ -84,87 +88,39 @@ line BYTE ?							; Used to indicate the line that we're check whether it exists
 ;================================================================================================================================================================================================================================================
 
 main PROC
-	CALL ReadLines
+	
+	mov edx, offset welcome
+	call writestring  ;Welcome messages 
+	call crlf 
 
-	mov ESI, OFFSET inputLines	; list of characters
-	mov EDI, OFFSET pointsList	; list to be filled with numbers
-	CALL ConvertCharsToNumbers
-	;call writeDec
-	mov actualSize, EAX ; EAX has the number of converted integers
+	start:
+	mov edx, offset chooseProgram ;choose which output style
+	call writestring 
+	call crlf 
 
-	mov EDX, OFFSET pointsList
-	mov ECX, actualSize
-	mov ESI, OFFSET xList
-	mov EDI, OFFSET yList
-	;mov xNumberElement, 0
-	;mov yNumberElement, 0
-	CALL DivideIntoXY
+	call readint ;reads which program 1)Display results 2)Draw Shapes 
 
-	mov EAX, actualSize
-	CALL DivideByTwo      ;getting # points = # of bytes (actualSize) / 2
-	mov numOfPoints, AL   ;EAX contains actualSize / 2
-	CALL DivideByTwo      ;getting # of lines = # of points (EAX) / 2
-	mov numOfLines, AL	  ;EAX contains numOfPoints / 2
+	CMP eax, 1 ;check if program 1 
+	JE display_shape_numbers
 
-	;movzx ECX, numOfPoints
-	;mov EDX, offset xList
-	;coutXs:
-		;movzx EAX, BYTE ptr [EDX]
-		;CALL WriteInt
-		;CALL CRLF
-		;inc EDX
-	;LOOP coutXs
+	CMP eax, 2 ; check if program 2
+	JE draw_shapes 
 
-	;triangles + example of the output (to understand what my PROCs do)
-	CALL FindTriangles
-	mov EAX, numOfTriangles
-	CALL WriteDec ;number of triangles
-	CALL CRLF
-	CALL CRLF
-	cmp numOfTriangles, 0
-	JE noTrianglesFound
-	mov ECX, numOfPointsTriangles
-	mov EDX, offset pointsTrianglesList
-	mov ESI, 0 ;points counter
-	outputTriangles:
-		mov AL, '('
-		CALL WriteChar
+	CMP eax, 0 ;check if to exit program
+	JE ending
 
-		mov EBX, [EDX] ;index of the point in xList and yList
-		mov EDI, offset xList
-		add EDI, EBX
-		movzx EAX, BYTE ptr [EDI]
-		CALL WriteInt  ;x coordinate of the point
-		
-		mov AL, ','
-		CALL WriteChar
-		mov AL, ' '
-		CALL WriteChar
+	mov edx, offset error ;print error message other wise
+	call writestring
+	call crlf
+	JMP start
 
-		mov EDI, offset yList
-		add EDI, EBX
-		movzx EAX, BYTE ptr [EDI] ;y coordinate of the point
-		CALL WriteInt
+	display_shape_numbers:
 
-		mov AL, ')'
-		CALL WriteChar
-
-		CALL CRLF
-		add EDX, type pointsTrianglesList
-
-		inc ESI
-		cmp ESI, 3
-		JNE triangleNotDone
-		mov ESI, 0
-		CALL CRLF
-
-		triangleNotDone:
-	loop outputTriangles
-	noTrianglesFound:
-
-	CALL findRectanglesAndSquares
-
-exit
+	;JMP somewhere 
+	draw_shapes:
+	
+	ending:
+  exit
 main ENDP
 
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
