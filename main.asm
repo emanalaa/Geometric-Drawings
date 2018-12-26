@@ -222,11 +222,11 @@ TextMode PROC
 		perCoordinate:
 			mov al, '('
 			call writechar
-			mov eax, [edi]
+			movzx eax, BYTE PTR [edi]
 			call writedec
 			mov al, ','
 			call writechar
-			mov eax, [esi]
+			movzx eax, BYTE PTR [esi]
 			call writedec
 			mov al, ')'
 			call writechar
@@ -261,11 +261,11 @@ TextMode PROC
 		perCoordinate2: 
 			mov al, '('
 			call writechar
-			mov eax, [edi]
+			movzx eax, BYTE PTR [edi]
 			call writeint
 			mov al, ','
 			call writechar
-			mov eax, [esi]
+			movzx eax, BYTE PTR [esi]
 			call writeint
 			mov al, ')'
 			call writechar
