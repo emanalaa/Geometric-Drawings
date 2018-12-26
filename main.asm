@@ -1,4 +1,5 @@
 INCLUDE Irvine32.inc
+include macros.inc
 
 .DATA
 ;================================================================================================================================================================================================================================================
@@ -77,6 +78,8 @@ x4 BYTE ?							; Used as the x-coordinate of the found Fourth point in the vali
 y4 BYTE ?							; Used as the y-coordinate of the found Fourth point in the validation of the rectangle points
 line BYTE ?							; Used to indicate the line that we're check whether it exists in the input or not
 
+startX byte ? ;start x point of square/rectangle for drawing
+startY byte ? ;start y point of square/rectangle for drawing
 
 welcome BYTE "Hello welcome to our Geometric Drawings Project.",0
 chooseProgram BYTE "Enter 1 for Text Mode or 2 for Drawing Mode or 0 to exit",0
@@ -111,7 +114,7 @@ main PROC
 
 	mov edx, offset selected
 	call writestring
-	call readint ;reads which program 1)Display results 2)Draw Shapes 
+	call readint ;reads which program 1)Text Mode 2)Drawing Mode
 
 	CMP eax, 1 ;check if program 1 
 	JE Text_Mode
@@ -129,21 +132,153 @@ main PROC
 
 	Text_Mode:
 		CALL TextMode
-		mov edx, offset anotherProgram2 ;wanna draw shapes? 
-		call writestring
-		call crlf 
-
-		CALL readint ;read choice
-		CMP EAX, 0 ;exit
-		JE ending
+		JMP ending
 
 	Draw_Mode:
-		;CALL DrawMode 
+		CALL DrawingMode 
+		call readint ;to stop typing press any key to continue
 
 	ending:
   exit
 main ENDP
-;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+;-------------------------------------------------------------------------------------------------
+ draw_Rectangle_Square PROC 
+
+	mov eax, 0
+	mov ebx, 0
+
+	drawRectSquare:
+		mov al, [esi] ; al = fist x coordinate of this rectangle
+		mov startX, al ; startx = al
+		mov al, [edi]
+		mov startY, al ; starty = first y coordinate of this rectangle
+
+		push ecx
+		mov ecx, 3 ; last check is between first and last, after the loop 
+		drawCoords:
+			CALL draw_line ;draw line between this and the next point
+			inc esi
+			inc edi
+		loop drawCoords
+		mov al, [esi] ;x coordinates
+		mov bl, [edi] ;y coordinates 
+
+		CMP al, startX
+		JB smaller
+
+		mov ecx, 0
+		add cl, al
+		sub cl, startX
+
+		drawing_last_line:
+			push ax
+			mGotoxy al,bl
+			mov al, '*'
+			call writechar
+			pop ax
+			dec al
+		Loop drawing_last_line
+		JMP end4
+		smaller:
+		mov ecx, 0
+		add cl, startX
+		sub cl, al
+
+		drawing_last_line2:
+			push ax
+			mGotoxy al,bl
+			mov al, '*'
+			call writechar
+			pop ax
+			inc al
+		Loop drawing_last_line2
+			end4:
+			pop ecx
+			inc esi
+			inc edi
+		loop drawRectSquare
+	RET
+ draw_Rectangle_Square ENDP
+;-----------------------------------------------------------------------------------------------------------------
+draw_line PROC USES ecx
+			;push ecx
+			mov eax, 0
+			mov ebx, 0
+
+			mov al, [esi] ;xCoordinate
+			mov bl, [edi] ;yCoordinate
+
+			CMP al, [esi+1]
+			JE drawYs
+			CMP bl, [edi+1]
+			JE drawXs
+			JMP middle
+		;--------------------------------
+			drawYs:
+			CMP bl, [edi+1]
+			JB drawLine2
+			mov ecx, 0
+			add ecx, ebx
+			sub cl , BYTE PTR [edi+1]
+			drawLine:
+				push ax
+				mGotoxy al,bl
+				mov al, '*'
+				call writechar
+				dec bl 
+				pop ax
+			loop drawLine
+			JMP middle
+			drawLine2:
+			mov ecx, 0
+			mov edx, 0
+			mov dl , BYTE PTR [edi+1]
+			add ecx, edx
+			sub cl, bl
+			drawLines:
+			    push ax
+				mGotoxy al,bl
+				mov al, '*'
+				call writechar
+				inc bl 
+				pop ax
+			loop drawLines
+		;--------------------------------
+		    middle:
+			JMP end3
+		;--------------------------------
+			drawXs:
+			 CMP al, [esi+1]
+			 JB bigger
+			 mov ecx, eax
+			 sub cl, BYTE PTR [esi+1]
+			 drawLine3:
+			    push ax
+			    mGotoxy al,bl
+				mov al, '*'
+				call writechar
+				pop ax
+				dec al
+			 Loop drawLine3
+			 JMP end3
+			 bigger:
+			 mov ecx, 0
+			 mov cl, BYTE PTR [esi+1]
+			 sub cl, al
+			 drawLine4:
+			    push ax
+			    mGotoxy al,bl
+				mov al, '*'
+				call writechar
+				pop ax
+				inc al
+			 Loop drawLine4
+		;-------------------------------
+			end3:
+			;pop ecx
+	RET
+draw_line ENDP
+;-----------------------------------------------------------------------------------------------------------------
 TextMode PROC
 
 	CALL CRLF 
@@ -239,14 +374,18 @@ TextMode PROC
 	;--------------------------------------------
 	rectangles:
 	  CALL CRLF 
+
 	  mov edx, offset foundRect
 	  call writestring
+
 	  mov eax, rectanglesNumber
 	  call writedec
 	  CALL CRLF 
 	  CALL CRLF
+
 	  CMP eax, 0
 	  JE ending2
+
 	  mov ecx, eax
 	  mov edi, offset xRectanglesList
 	  mov esi, offset yRectanglesList
@@ -274,11 +413,26 @@ TextMode PROC
 			inc esi
 		LOOP perCoordinate2 
 		POP ecx
+		CALL CRLF
+		CALL CRLF
 	 loop RectCoord
-	 CALL CRLF
 	;-------------------------------------------
 	ending2:
+	RET
 TextMode ENDP
+;-------------------------------
+DrawingMode PROC 
+	mov ecx, rectanglesNumber ;numbers of detected rectangles 
+	mov esi, offset xRectanglesList
+	mov edi, offset yRectanglesList 
+	CALL draw_Rectangle_Square
+
+	mov ecx, SquaresNumber
+	mov esi, offset xSquaresList
+	mov edi, offset ySquaresList 
+	CALL draw_Rectangle_Square
+	Ret
+DrawingMode ENDP
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 CoordinatesFilling PROC
 
