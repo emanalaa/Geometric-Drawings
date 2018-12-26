@@ -79,8 +79,14 @@ line BYTE ?							; Used to indicate the line that we're check whether it exists
 
 
 welcome BYTE "Hello welcome to our Geometric Drawings Project.",0
-chooseProgram BYTE "Enter 1 for Diaplaying number of shapes or 2 for Drawing them or 0 to exit",0
+chooseProgram BYTE "Enter 1 for Text Mode or 2 for Drawing Mode or 0 to exit",0
 error BYTE "Invalid choice, please enter you choice again!", 0
+anotherProgram2 BYTE "Press 0 to exit or 1 to draw shapes.",0
+foundTriangles BYTE "Triangles detected = ",0
+foundSquares BYTE "Squares Detected = ",0
+foundRect BYTE "Rectangles Detected = ",0
+coordinatesStr BYTE "Coordinates are:",0
+selected BYTE "Mode Selected: ",0
 ;================================================================================================================================================================================================================================================
 
 
@@ -89,22 +95,29 @@ error BYTE "Invalid choice, please enter you choice again!", 0
 
 main PROC
 	
+	CALL CoordinatesFilling
+
 	mov edx, offset welcome
 	call writestring  ;Welcome messages 
 	call crlf 
+
+	CALL FindTriangles
+	CALL findRectanglesAndSquares
 
 	start:
 	mov edx, offset chooseProgram ;choose which output style
 	call writestring 
 	call crlf 
 
+	mov edx, offset selected
+	call writestring
 	call readint ;reads which program 1)Display results 2)Draw Shapes 
 
 	CMP eax, 1 ;check if program 1 
-	JE display_shape_numbers
+	JE Text_Mode
 
 	CMP eax, 2 ; check if program 2
-	JE draw_shapes 
+	JE Draw_Mode
 
 	CMP eax, 0 ;check if to exit program
 	JE ending
@@ -114,17 +127,185 @@ main PROC
 	call crlf
 	JMP start
 
-	display_shape_numbers:
+	Text_Mode:
+		CALL TextMode
+		mov edx, offset anotherProgram2 ;wanna draw shapes? 
+		call writestring
+		call crlf 
 
-	;JMP somewhere 
-	draw_shapes:
-	
+		CALL readint ;read choice
+		CMP EAX, 0 ;exit
+		JE ending
+
+	Draw_Mode:
+		;CALL DrawMode 
+
 	ending:
   exit
 main ENDP
-
 ;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+TextMode PROC
 
+	CALL CRLF 
+	mov EAX, numOfTriangles
+	mov EDX, offset foundTriangles
+	CALL writestring
+	CALL WriteDec ;number of triangles
+	CALL CRLF
+	CALL CRLF
+	cmp numOfTriangles, 0
+	JE noTrianglesFound
+
+	mov edx, offset coordinatesStr
+	call writestring
+	call crlf
+
+	mov ECX, numOfPointsTriangles
+	mov EDX, offset pointsTrianglesList
+	mov ESI, 0 ;points counter
+
+	outputTriangles:
+		mov AL, '('
+		CALL WriteChar
+
+		mov EBX, [EDX] ;index of the point in xList and yList
+		mov EDI, offset xList
+		add EDI, EBX
+		movzx EAX, BYTE ptr [EDI]
+		CALL WriteInt  ;x coordinate of the point
+		
+		mov AL, ','
+		CALL WriteChar
+		mov AL, ' '
+		CALL WriteChar
+
+		mov EDI, offset yList
+		add EDI, EBX
+		movzx EAX, BYTE ptr [EDI] ;y coordinate of the point
+		CALL WriteInt
+
+		mov AL, ')'
+		CALL WriteChar
+
+		CALL CRLF
+		add EDX, type pointsTrianglesList
+
+		inc ESI
+		cmp ESI, 3
+		JNE triangleNotDone
+		mov ESI, 0
+		CALL CRLF
+
+		triangleNotDone:
+	loop outputTriangles
+	noTrianglesFound:
+	;-----------------------------------------
+	mov edx, offset foundSquares 
+	call writestring 
+	mov eax, squaresNumber
+	call writedec
+	CALL CRLF
+	cmp eax, 0
+	CALL CRLF
+	JMP rectangles 
+	mov ecx, eax
+	mov edi, offset xSquaresList
+	mov esi, offset ySquaresList
+
+	mov edx, offset coordinatesStr 
+	  call writestring
+	  call crlf
+
+	SquareCoord: 
+		PUSH ecx
+		mov ecx, 4
+		perCoordinate:
+			mov al, '('
+			call writechar
+			mov eax, [edi]
+			call writedec
+			mov al, ','
+			call writechar
+			mov eax, [esi]
+			call writedec
+			mov al, ')'
+			call writechar
+			call crlf
+			inc edi
+			inc esi
+		LOOP perCoordinate  
+		POP ecx
+	loop SquareCoord
+	;--------------------------------------------
+	rectangles:
+	  CALL CRLF 
+	  mov edx, offset foundRect
+	  call writestring
+	  mov eax, rectanglesNumber
+	  call writedec
+	  CALL CRLF 
+	  CALL CRLF
+	  CMP eax, 0
+	  JE ending2
+	  mov ecx, eax
+	  mov edi, offset xRectanglesList
+	  mov esi, offset yRectanglesList
+
+	  mov edx, offset coordinatesStr
+	  call writestring
+	  call crlf
+
+	  RectCoord: 
+		PUSH ecx
+		mov ecx, 4
+		perCoordinate2: 
+			mov al, '('
+			call writechar
+			mov eax, [edi]
+			call writeint
+			mov al, ','
+			call writechar
+			mov eax, [esi]
+			call writeint
+			mov al, ')'
+			call writechar
+			call crlf
+			inc edi
+			inc esi
+		LOOP perCoordinate2 
+		POP ecx
+	 loop RectCoord
+	 CALL CRLF
+	;-------------------------------------------
+	ending2:
+TextMode ENDP
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+CoordinatesFilling PROC
+
+	CALL ReadLines
+
+	mov ESI, OFFSET inputLines	; list of characters
+	mov EDI, OFFSET pointsList	; list to be filled with numbers
+	CALL ConvertCharsToNumbers
+	;call writeDec
+	mov actualSize, EAX ; EAX has the number of converted integers
+
+	mov EDX, OFFSET pointsList
+	mov ECX, actualSize
+	mov ESI, OFFSET xList
+	mov EDI, OFFSET yList
+	;mov xNumberElement, 0
+	;mov yNumberElement, 0
+	CALL DivideIntoXY
+
+	mov EAX, actualSize
+	CALL DivideByTwo      ;getting # points = # of bytes (actualSize) / 2
+	mov numOfPoints, AL   ;EAX contains actualSize / 2
+	CALL DivideByTwo      ;getting # of lines = # of points (EAX) / 2
+	mov numOfLines, AL	  ;EAX contains numOfPoints / 2
+
+CoordinatesFilling ENDP
+;----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 ReadLines PROC
 	mov EDX, offset fileName
 	CALL OpenFile ;returns fileHandle in EAX
@@ -593,12 +774,12 @@ findRectanglesAndSquares PROC
 	CALL findIntersections
 	CALL findRectangles
 
-	mov EAX, rectanglesNumber
-	call writedec
-	call crlf
-	mov EAX, squaresNumber
-	call writedec
-	call crlf
+	;mov EAX, rectanglesNumber
+	;call writedec
+	;call crlf
+	;mov EAX, squaresNumber
+	;call writedec
+	;call crlf
 
 ret
 findRectanglesAndSquares ENDP
