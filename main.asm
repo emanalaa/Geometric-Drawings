@@ -90,9 +90,9 @@ differenceY BYTE ? ;difference between y1 and y2
 currentX BYTE ?
 currentY BYTE ?
 
-index1 BYTE ?
-index2 BYTE ?
-index3 BYTE ?
+index1 DWORD ?
+index2 DWORD ?
+index3 DWORD ?
 
 slope SDWORD ? 
 B SDWORD ? 
@@ -159,7 +159,7 @@ main PROC
 main ENDP
 ;-------------------------------------------------------------------------------------------------
 drawStraightLine PROC
-
+    
 
 	RET
 drawStraightLine ENDP
@@ -199,6 +199,7 @@ Triangles PROC
 
 	drawTriangle:
 		CALL Draw1Triangle
+		add ebx, 16
 	Loop drawTriangle
 	RET
 Triangles ENDP
@@ -207,25 +208,22 @@ Draw1Triangle PROC
 		PUSH ecx
 		mov eax, 0
 		mov eax, [ebx]
-		mov index1, al
 
-		mov eax, [ebx+4]
-		mov index2, al
-
-		mov eax, [ebx+8]
-		mov index3, al
-		
-		mov cl, [esi+index1]
+		mov cl, BYTE PTR [esi+eax]
 		mov currentX, cl
 
-		mov cl, [edi+index1]
+		mov cl, BYTE PTR [edi+eax]
 		mov currentY, cl
 
-		mov cl, [esi+index2]
+		mov eax, [ebx+4]
+
+		mov cl, BYTE PTR [esi+eax]
 		mov nextX, cl
 
-		mov cl, [edi+index2]
+		mov cl, BYTE PTR [edi+eax]
 		mov nextY, cl
+
+		mov eax, [ebx+8]		
 
 		CALL calculateSlope
 		CALL calculateB
@@ -242,18 +240,22 @@ Draw1Triangle PROC
 			mov cl, nextY
 			mov currentY, cl
 
-			mov cl, [esi+index3]
+			mov eax, [ebx+8]		
+
+			mov cl, BYTE PTR [esi+eax]
 			mov nextX, cl
 
-			mov cl, [edi+index3]
+			mov cl, BYTE PTR [edi+eax]
 			mov nextY, cl
 			POP ecx
 		Loop drawTriangleLine
 		
-		mov cl, [esi+index1]
+		mov eax, [ebx]		
+
+		mov cl, BYTE PTR [esi+eax]
 		mov currentX, cl
 
-		mov cl, [edi+index1]
+		mov cl, BYTE PTR [edi+eax]
 		mov currentY, cl
 
 		call drawOneLine 
@@ -275,6 +277,7 @@ Draw1Triangle ENDP
 			mov X, cl ;drawing point
 			JMP drawPoints1
 			straight_line:
+				;mov X, 
 				CALL drawStraightLine
 				JMP endings
 			decrementX:
