@@ -337,12 +337,15 @@ TextMode PROC
 	;-----------------------------------------
 	mov edx, offset foundSquares 
 	call writestring 
+
 	mov eax, squaresNumber
 	call writedec
 	CALL CRLF
+
 	cmp eax, 0
+	JE rectangles 
 	CALL CRLF
-	JMP rectangles 
+
 	mov ecx, eax
 	mov edi, offset xSquaresList
 	mov esi, offset ySquaresList
