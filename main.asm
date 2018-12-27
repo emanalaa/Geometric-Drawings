@@ -287,6 +287,10 @@ drawTriangleLine PROC
 	RET
 	;---------------------------------------------
 	greater:
+	mov dl, [edi+eax]
+	mov yVariable, dl
+	mov dl, [esi+eax]
+	mov xVariable, dl
 	;difference of X is greater than Y
 	mov ecx, 0
 	mov cl, differenceY
@@ -329,6 +333,10 @@ drawTriangleLine PROC
 	RET
 	;--------------------------------------------
 	smaller:
+	mov dl, [edi+eax]
+	mov yVariable, dl
+	mov dl, [esi+eax]
+	mov xVariable, dl
 	;difference of X is smaller than Y
 	mov ecx, 0
 	mov cl, differenceX
