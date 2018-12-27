@@ -87,8 +87,15 @@ nextY byte ?
 differenceX BYTE ? ;difference between x1 and x2 
 differenceY BYTE ? ;difference between y1 and y2 
 
-xVariable BYTE ?
-yVariable BYTE ?
+currentX BYTE ?
+currentY BYTE ?
+
+index1 BYTE ?
+index2 BYTE ?
+index3 BYTE ?
+
+slope SDWORD ? 
+B SDWORD ? 
 
 welcome BYTE "Hello welcome to our Geometric Drawings Project.",0
 chooseProgram BYTE "Enter 1 for Text Mode or 2 for Drawing Mode or 0 to exit",0
@@ -151,233 +158,151 @@ main PROC
   exit
 main ENDP
 ;-------------------------------------------------------------------------------------------------
-DrawTriangles PROC
+drawStraightLine PROC
+
+
+	RET
+drawStraightLine ENDP
+;-------------------------
+calculateSlope PROC USES eax edx ebx
+	CDQ
+	mov eax, 0
+	mov al, nextY
+	sub al, currentY
+
+	mov ebx,0
+	mov bl, nextX
+	sub bl, currentX
+
+	IDIV ebx 
+	mov slope, eax
+	RET
+calculateSlope ENDP
+;------------------------------------------
+calculateB PROC USES eax edx
+	mov eax, 0
+	CDQ
+	mov eax, slope
+	IMUL currentX
+	add al, currentY
+	mov B, eax
+	RET
+calculateB ENDP
+;------------------------------------------
+Triangles PROC
 	mov ebx, offset pointsTrianglesList ;indexes of (x,y) points of triangles 
 
 	mov esi, offset xList
 	mov edi, offset yList
 	
 	mov ecx, numOfTriangles 
+
 	drawTriangle:
-
-		PUSH ecx
-		mov ecx, 2
-		draw2Lines:
-			PUSH ecx
-			MOV eax, [ebx+4] ;index of second coordinate
-			MOV dl, [esi+eax]
-			MOV nextX, dl ;value of x2 of this triangle 
-			MOV dl, [edi+eax]
-			MOV nextY, dl ;value of y2 of this triangle 
-			MOV eax, [ebx] ;index of (x1,y1) of this triangle
-		
-			CALL calculateDifferenceX
-			CALL calculateDifferenceY
-			CALL drawTriangleLine
-			add ebx, TYPE pointsTrianglesList
-			POP ecx
-		Loop draw2Lines
-
-		MOV eax, [ebx-8] ;index of x1
-		MOV dl, [esi+eax]
-		MOV nextX, dl ; value of x1
-		MOV dl, [edi+eax]
-		MOV nextY, dl ; value of y1
-		MOV eax, [ebx] ;index of (x3,y3) of this triangle
-		
-		CALL calculateDifferenceX
-		CALL calculateDifferenceY
-		CALL drawTriangleLine
-
-		POP ecx
+		CALL Draw1Triangle
 	Loop drawTriangle
-  RET
-DrawTriangles ENDP
-;-----------------------------------------------------------------------------------------
-printXY macro X,Y
-		push eax
-		mGOTOXY X,Y
-		mov al, '*'
-		call writechar 
-		pop eax
-endm
-;----------------------------------------------------------------------------------------
-calculateDifferenceX PROC 
-		;calculate difference between x1 and x2 
-		mov cl, [esi+eax] ;x1
-		CMP cl, nextX ;x1 and x2
-		JA one
-		JB two
-		mov differenceX, 0
-		JMP ending1
-		one:
-		sub ecx, DWORD PTR nextX
-		mov differenceX, cl
-		JMP ending1
-		two:
-		sub differenceX, cl
-		mov cl, nextX
-		add differenceX, cl
-		ending1:
-		RET
-calculateDifferenceX ENDP
-;----------------------------------------------------------------------------------------
-calculateDifferenceY PROC
-	;calculate difference between y1 and y2
-	mov cl, [edi+eax] ;y1
-	CMP cl, nextY 
-	JA one1
-	JB two2
-	mov differenceY, 0
-	JMP starting2
-	one1:
-	sub ecx, DWORD PTR nextY
-	mov differenceY, cl
-	JMP starting2
-	two2:
-	sub differenceY, cl
-	mov cl, nextY
-	add differenceY, cl
-	starting2:
 	RET
-calculateDifferenceY ENDP
-;-----------------------------------------------------------------------------------------
-drawTriangleLine PROC 
-	mov cl, differenceX 
-	CMP cl, differenceY
-	JA greater
-	JB smaller
-	;ebx feeh el index beta3 el triangle delw2ty
-	;esi feeh el x list
-	;edi feeh el y list
-	;difference of X and Y are equal
-	CMP cl, 0
-	JE hello
-	JMP nextu
-	hello:
-		RET
-	nextu:
-	mov ecx, 0
-	mov cl, differenceX
+Triangles ENDP
+;--------------------------------------------------------------------------------------------------
+Draw1Triangle PROC
+		PUSH ecx
+		mov eax, 0
+		mov eax, [ebx]
+		mov index1, al
 
-	mov dl, [edi+eax]
-	mov yVariable, dl
-	mov dl, [esi+eax]
-	mov xVariable, dl
+		mov eax, [ebx+4]
+		mov index2, al
 
-	printLine:
-		printXY xVariable, yVariable
-		mov dl, [esi+eax] ;current x
-		CMP dl, nextX; compare current x and next x
-		JB increment
-		dec xVariable
-		JMP toY
-		increment:
-		inc xVariable
-		toY:
-		mov dl, [edi+eax] ;current y
-		CMP dl, nextY ;comapre current y and next y
-		JB increment2
-		dec yVariable
-		JMP toend
-		increment2:
-		inc yVariable
-		toend:
-	Loop printLine
-	RET
-	;---------------------------------------------
-	greater:
-	mov dl, [edi+eax]
-	mov yVariable, dl
-	mov dl, [esi+eax]
-	mov xVariable, dl
-	;difference of X is greater than Y
-	mov ecx, 0
-	mov cl, differenceY
-	CMP cl, 0
-	JE printnext
-	printLine1:
-		printXY xVariable, yVariable
-		mov dl, [esi+eax]
-		CMP dl, nextX
-		JA increment1
-		dec xVariable
-		JMP toY1
-		increment1:
-		inc xVariable
-		toY1:
-		mov dl, [edi+eax]
-		CMP dl, nextY
-		JA increment3
-		dec yVariable
-		increment3:
-		inc yVariable
-		dec differenceX
-	Loop printLine1
-	
-	printnext:
-	mov cl, differenceX
-	CMP cl, 0
-	JE endo
-	print2:
-		printXY xVariable, yVariable
-		mov dl, [esi+eax]
-		CMP dl, nextX
-		JB increment9
-		dec xVariable
-		JMP Here
-		increment9:
-		inc xVariable
-		Here:
-	loop print2
-	RET
-	;--------------------------------------------
-	smaller:
-	mov dl, [edi+eax]
-	mov yVariable, dl
-	mov dl, [esi+eax]
-	mov xVariable, dl
-	;difference of X is smaller than Y
-	mov ecx, 0
-	mov cl, differenceX
-	CMP cl, 0
-	JE next1
-	printLine11:
-		printXY xVariable, yVariable
-		mov dl, [esi+eax]
-		CMP dl, nextX
-		JA increment4
-		dec xVariable
-		JMP toY3
-		increment4:
-		inc xVariable
-		toY3:
-		mov dl, [edi+eax]
-		CMP dl, nextY
-		JA increment5
-		dec yVariable
-		increment5:
-		inc yVariable
-		dec differenceY
-	Loop printLine11
-	next1:
-	mov ecx, 0
-	mov cl, differenceY
+		mov eax, [ebx+8]
+		mov index3, al
+		
+		mov cl, [esi+index1]
+		mov currentX, cl
 
-	print22:
-		printXY xVariable, yVariable
-		mov dl, [edi+eax] ;current Y 
-		CMP dl, nextY ;compare Y and nextY
-		JB increment7
-		dec yVariable
-		JMP tomyend
-		increment7:
-		inc yVariable
-		tomyend:
-	loop print22
-	endo:
+		mov cl, [edi+index1]
+		mov currentY, cl
+
+		mov cl, [esi+index2]
+		mov nextX, cl
+
+		mov cl, [edi+index2]
+		mov nextY, cl
+
+		CALL calculateSlope
+		CALL calculateB
+
+		mov ecx, 2
+		drawTriangleLine:
+			PUSH ecx
+
+			CALL drawOneLine
+
+			mov cl, nextX
+			mov currentX, cl
+
+			mov cl, nextY
+			mov currentY, cl
+
+			mov cl, [esi+index3]
+			mov nextX, cl
+
+			mov cl, [edi+index3]
+			mov nextY, cl
+			POP ecx
+		Loop drawTriangleLine
+		
+		mov cl, [esi+index1]
+		mov currentX, cl
+
+		mov cl, [edi+index1]
+		mov currentY, cl
+
+		call drawOneLine 
+		POP ecx
 	RET
-drawTriangleLine ENDP
+Draw1Triangle ENDP
+;----------------------------------------------------------------------------------------------------
+ DrawOneLine PROC 
+ PUSH ecx
+			PUSH eax
+			mov cl, currentX
+			CMP cl, nextX
+			JE straight_line
+			JA decrementX ;if currentX > nextX
+			movzx eax, nextX
+			sub al, currentX
+			mov differenceX, al
+			mov cl, nextX
+			mov X, cl ;drawing point
+			JMP drawPoints1
+			straight_line:
+				CALL drawStraightLine
+				JMP endings
+			decrementX:
+			mov cl, currentX
+			mov X, cl
+			movzx eax, currentX
+			sub al, nextX
+			mov differenceX, al
+			drawpoints1:
+			mov ecx, 0
+			mov cl, differenceX
+			drawPoints:
+				;y = mx+b
+				CDQ
+				mov eax, slope
+				IMUL X
+				add eax, B
+				mov Y, al
+				mGOTOXY X, Y
+				mov al, '*'
+				call writechar
+				dec X
+			loop drawPoints
+			endings:
+		POP eax
+		POP ecx
+	RET
+DrawOneLine ENDP
 ;-----------------------------------------------------------------------------------------
  draw_Rectangle_Square PROC 
 
@@ -681,7 +606,7 @@ DrawingMode PROC
 	mov ecx, numOfTriangles
 	CMP ecx, 0
 	JE next
-	CALL drawTriangles 
+	CALL Triangles 
 	next:
 	Ret
 DrawingMode ENDP
